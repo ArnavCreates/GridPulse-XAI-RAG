@@ -1,0 +1,86 @@
+{
+  "event_id": "evt_diag_benchmark_001",
+  "timestamp_utc": "2026-01-01T00:02:22.000+00:00",
+  "input_telemetry": {
+    "window_step": 142,
+    "protocol_type": "XROOTD_STREAM",
+    "payload_mb": 512.45,
+    "source_node": "NODE_T1_014",
+    "src_cpu_load_prev": 48.0,
+    "src_cpu_load_curr": 96.5,
+    "target_node": "SE_POOL_007",
+    "dst_queue_depth_prev": 12.0,
+    "dst_queue_depth_curr": 88.5,
+    "is_anomaly": 1
+  },
+  "is_anomaly": true,
+  "severity": "CRITICAL",
+  "hybrid_score": 0.9928,
+  "model_scores": {
+    "lightgbm": 0.9198,
+    "lstm_autoencoder": 1.0,
+    "networkx_topology": 1.0
+  },
+  "top_shap_drivers": [
+    {
+      "feature": "payload_mb",
+      "observed_value": 512.45,
+      "shap_impact": 3.5215,
+      "impact_units": "log-odds",
+      "direction": "+",
+      "abs_impact": 3.5214978463930082
+    },
+    {
+      "feature": "queue_depth_delta",
+      "observed_value": 76.5,
+      "shap_impact": 0.2721,
+      "impact_units": "log-odds",
+      "direction": "+",
+      "abs_impact": 0.27214680832351634
+    },
+    {
+      "feature": "src_cpu_load_curr",
+      "observed_value": 96.5,
+      "shap_impact": 0.2533,
+      "impact_units": "log-odds",
+      "direction": "+",
+      "abs_impact": 0.25333626875708637
+    },
+    {
+      "feature": "dst_queue_depth_curr",
+      "observed_value": 88.5,
+      "shap_impact": 0.2508,
+      "impact_units": "log-odds",
+      "direction": "+",
+      "abs_impact": 0.250803310854915
+    }
+  ],
+  "runbook_recommendations": [
+    {
+      "runbook_id": "RB-GRID-001",
+      "section_title": "Diagnostic Verification",
+      "severity": "CRITICAL / HIGH",
+      "failure_mode": "Mode A (Queue Saturation & Buffer Overflow)",
+      "source_file": "01_xrootd_buffer_saturation.md",
+      "similarity_score": 0.77,
+      "recommended_action": "1. **Queue Gradient Analysis:** Check if `dst_queue_depth_curr - dst_queue_depth_prev` exceeds threshold within a single telemetry window step.\n2. **Transfer Rate Verification:** Confirm incoming payload size (`payload_mb > 150 MB`) is stressing the storage node's NVMe write pool.\n3. **Storage Daemon Socket Inspection:** Run socket diagnostic utilities on the storage node to inspect TCP retransmission counters and local buffer ring allocation.\n4. **Bandwidth Throttling State:** Assess whether concurrent file copy streams exceed the storage node's physical backplane limit.",
+      "full_section_snippet": "Runbook RB-GRID-001. Failure mode: Mode A (Queue Saturation & Buffer Overflow). Severity: CRITICAL / HIGH.\n\n## Diagnostic Verification\n1. **Queue Gradient Analysis:** Check if `dst_queue_depth_curr - dst_queue_depth_prev` exceeds threshold within a single telemetry window step.\n2. **Transfer Rate Verification:** Confirm incoming payload size (`payload_mb > 150 MB`) is stressing the storage node's NVMe write pool.\n3. **Storage Daemon Socket Inspec"
+    },
+    {
+      "runbook_id": "RB-GRID-003",
+      "section_title": "Diagnostic Verification",
+      "severity": "HIGH",
+      "failure_mode": "Mode D (Fan-In Incast Saturation)",
+      "source_file": "03_fan_in_incast_congestion.md",
+      "similarity_score": 0.7486,
+      "recommended_action": "1. **In-Degree Centrality Evaluation:** Identify destination nodes where `target_fan_in_degree` surges $> 3\\times$ above the cluster median.\n2. **Switch Queue Telemetry:** Verify Explicit Congestion Notification (ECN) marking rate on the top-of-rack switch uplink.\n3. **Client Stream Scheduling:** Check workload orchestrator batch job schedules to detect unjittered batch task completion.\n4. **Queue Growth Gradient:** Monitor destination node I/O scheduler queue backpressure metrics.",
+      "full_section_snippet": "Runbook RB-GRID-003. Failure mode: Mode D (Fan-In Incast Saturation). Severity: HIGH.\n\n## Diagnostic Verification\n1. **In-Degree Centrality Evaluation:** Identify destination nodes where `target_fan_in_degree` surges $> 3\\times$ above the cluster median.\n2. **Switch Queue Telemetry:** Verify Explicit Congestion Notification (ECN) marking rate on the top-of-rack switch uplink.\n3. **Client Stream Scheduling:** Check workload orchestrator batch job "
+    }
+  ],
+  "execution_latency_ms": {
+    "scoring_ms": 8.84,
+    "shap_attribution_ms": 5.7,
+    "chromadb_rag_ms": 79.19,
+    "end_to_end_total_ms": 93.72
+  }
+}

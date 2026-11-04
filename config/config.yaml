@@ -1,0 +1,141 @@
+# GridPulse-XAI-RAG Centralized Configuration
+# Distributed Computing Grid Telemetry Anomaly Detection & Runbook RAG System
+
+system:
+  name: "GridPulse-XAI-RAG"
+  version: "1.0.0"
+  environment: "production"
+  random_seed: 42
+  device: "cpu"
+  num_threads: 4
+  deterministic_mode: true
+  log_level: "INFO"
+
+telemetry_schema:
+  time_col: "window_step"
+  allowed_protocols:
+    - "XROOTD_STREAM"
+    - "GRID_FTP"
+    - "HEARTBEAT_SYNC"
+    - "RPC_CONTROL"
+    - "CACHE_REPLICATION"
+  payload_col: "payload_mb"
+  src_node_col: "source_node"
+  src_cpu_prev_col: "src_cpu_load_prev"
+  src_cpu_curr_col: "src_cpu_load_curr"
+  dst_node_col: "target_node"
+  dst_queue_prev_col: "dst_queue_depth_prev"
+  dst_queue_curr_col: "dst_queue_depth_curr"
+  target_label_col: "is_anomaly"
+  min_payload_mb: 0.1
+  max_payload_mb: 1000.0
+  min_cpu_load: 0.0
+  max_cpu_load: 100.0
+  min_queue_depth: 0.0
+  max_queue_depth: 250.0
+  sequence_length: 6
+  window_stride: 1
+
+feature_engineering:
+  eps: 0.0001
+  clip_bounds_lower: -100.0
+  clip_bounds_upper: 1000.0
+  compute_load_delta: true
+  compute_queue_surge_ratio: true
+  compute_bandwidth_pressure: true
+  compute_load_ratio: true
+  compute_queue_to_payload: true
+  rolling_window_size: 6
+  zscore_normalization: false
+  robust_scaling: true
+  include_raw_features: true
+  num_engineered_features: 14
+
+lightgbm:
+  n_estimators: 120
+  learning_rate: 0.05
+  num_leaves: 31
+  max_depth: 6
+  min_child_samples: 20
+  subsample: 0.85
+  colsample_bytree: 0.85
+  reg_alpha: 0.1
+  reg_lambda: 0.1
+  scale_pos_weight: 3.5
+  objective: "binary"
+  metric: "binary_logloss"
+  boost_from_average: true
+  verbose: -1
+
+lstm_autoencoder:
+  input_dim: 6
+  seq_len: 6
+  hidden_dim: 32
+  latent_dim: 16
+  num_layers: 1
+  dropout: 0.1
+  batch_size: 64
+  learning_rate: 0.003
+  epochs: 8
+  weight_decay: 0.0001
+  reconstruction_loss_percentile: 92.0
+  gradient_clip_val: 1.0
+  validation_split: 0.15
+
+topology_graph:
+  max_cycle_length: 4
+  fan_in_threshold: 8
+  fan_out_threshold: 10
+  pagerank_alpha: 0.85
+  pagerank_max_iter: 100
+  pagerank_tol: 0.00001
+  edge_weight_decay: 0.95
+  hub_zscore_cutoff: 2.5
+  cycle_penalty_weight: 0.45
+  bottleneck_penalty_weight: 0.35
+  directed_multigraph: false
+
+hybrid_ensemble:
+  weight_lgbm: 0.45
+  weight_lstm_ae: 0.30
+  weight_topology: 0.25
+  alert_threshold: 0.50
+  critical_severity_threshold: 0.80
+  high_severity_threshold: 0.65
+  medium_severity_threshold: 0.50
+  prior_blend_weight: 0.20
+  min_active_modalities: 1
+
+shap_xai:
+  top_k_features: 4
+  background_samples: 100
+  check_additivity: false
+  attribution_min_abs_threshold: 0.01
+  approximate_interactions: false
+  summary_plot_max_display: 10
+
+rag_diagnostics:
+  embedding_model_name: "all-MiniLM-L6-v2"
+  excluded_header_sections: ["Metadata", "Symptom Signature"]
+  collection_name: "gridpulse_runbooks"
+  top_k_runbooks: 2
+  chunk_size_chars: 1200
+  chunk_overlap_chars: 100
+  similarity_metric: "cosine"
+  min_relevance_score: 0.25
+  runbooks_dir: "runbooks"
+  query_instruction: "Identify operational recovery procedure for grid telemetry anomaly: "
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  service_name: "gridpulse-xai-service"
+  prometheus_enabled: true
+  metrics_prefix: "gridpulse_"
+  histogram_buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5]
+  audit_log_path: "logs/diagnostic_audit.jsonl"
+  hash_chain_algorithm: "sha256"
+  max_batch_size: 256
+  rate_limit_per_minute: 600
+  timeout_seconds: 15.0
+  cors_origins: ["*"]

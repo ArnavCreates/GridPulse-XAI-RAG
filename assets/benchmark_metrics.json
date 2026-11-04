@@ -1,0 +1,64 @@
+{
+  "dataset_statistics": {
+    "total_samples": 15000,
+    "train_samples": 11250,
+    "test_samples": 3750,
+    "anomaly_ratio": 0.08,
+    "num_nodes": 60
+  },
+  "component_ablation_metrics": {
+    "LightGBM": {
+      "roc_auc": 0.91024,
+      "pr_auc": 0.77355,
+      "f1_score": 0.66995,
+      "precision": 0.96226,
+      "recall": 0.51385
+    },
+    "LSTM_Autoencoder": {
+      "roc_auc": 0.78005,
+      "pr_auc": 0.28306,
+      "f1_score": 0.37792,
+      "precision": 0.3006,
+      "recall": 0.50882
+    },
+    "NetworkX_Topology": {
+      "roc_auc": 0.8667,
+      "pr_auc": 0.77745,
+      "f1_score": 0.6876,
+      "precision": 1.0,
+      "recall": 0.52393
+    },
+    "Hybrid_Ensemble": {
+      "roc_auc": 0.96662,
+      "pr_auc": 0.88245,
+      "f1_score": 0.82797,
+      "precision": 0.93082,
+      "recall": 0.74559
+    }
+  },
+  "rag_retrieval_benchmarks": {
+    "evaluation_anomalies_count": 100,
+    "top1_retrieval_accuracy": 1.0,
+    "top2_retrieval_accuracy": 1.0,
+    "evaluation_modes_covered": [
+      "MODE_A",
+      "MODE_B",
+      "MODE_C",
+      "MODE_D"
+    ]
+  },
+  "latency_benchmarks_ms": {
+    "tri_modal_scoring_mean_ms": 8.84,
+    "shap_tree_explainer_mean_ms": 5.7,
+    "chromadb_vector_rag_mean_ms": 79.19,
+    "end_to_end_pipeline_mean_ms": 93.72
+  },
+  "system_metadata": {
+    "hardware_device": "CPU",
+    "embedding_model": "all-MiniLM-L6-v2",
+    "embedding_dimensions": 384,
+    "indexed_runbooks_count": 18,
+    "hash_chain_algorithm": "SHA-256",
+    "ensemble_architecture": "Stacked Logistic Hybrid Ensemble"
+  }
+}
